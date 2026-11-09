@@ -1073,6 +1073,9 @@ export const FRAME_BOOTSTRAP = `<!doctype html>
       naturalAspectRatio: el.naturalWidth && el.naturalHeight ? el.naturalWidth / el.naturalHeight
         : el.videoWidth && el.videoHeight ? el.videoWidth / el.videoHeight : null,
       minWidth: cs.minWidth,
+      maxWidth: cs.maxWidth,
+      minHeight: cs.minHeight,
+      maxHeight: cs.maxHeight,
       rowGap: px(cs.rowGap),
       columnGap: px(cs.columnGap),
       padding: [px(cs.paddingTop), px(cs.paddingRight), px(cs.paddingBottom), px(cs.paddingLeft)],
