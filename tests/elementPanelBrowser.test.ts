@@ -1190,6 +1190,33 @@ describe.skipIf(!findBrowserPath())('element design controls', () => {
     await expect.poll(() => saved.html).toContain('min-width: auto')
   }, 15_000)
 
+  it('edits min and max height and max width from the layout section', async () => {
+    const frame = await seedScrubTarget()
+    for (const [label, typed, property, savedCss] of [
+      ['Minimum height', '48', 'min-height', 'min-height: 48px'],
+      ['Maximum height', '240', 'max-height', 'max-height: 240px'],
+      ['Maximum width', '320', 'max-width', 'max-width: 320px'],
+    ] as const) {
+      await page.click(`[aria-label="${label}"]`, { count: 3 })
+      await page.keyboard.type(typed)
+      await page.keyboard.press('Enter')
+      await frame.waitForFunction(
+        (property, expected) =>
+          (document.querySelector('#scrub') as HTMLElement).style.getPropertyValue(property) === expected,
+        {},
+        property,
+        savedCss.split(': ')[1],
+      )
+      await expect.poll(() => saved.html).toContain(savedCss)
+    }
+    // Clearing removes the property again.
+    await page.click('[aria-label="Minimum height"]', { count: 3 })
+    await page.keyboard.press('Backspace')
+    await page.keyboard.press('Enter')
+    await frame.waitForFunction(() => (document.querySelector('#scrub') as HTMLElement).style.minHeight === '')
+    await expect.poll(() => saved.html).not.toContain('min-height')
+  }, 15_000)
+
   it('reconciles the displayed value with computed CSS after a drag finishes', async () => {
     const frame = await seedScrubTarget()
     const { x, y } = await startScrub('Width')
