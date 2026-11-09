@@ -17,6 +17,7 @@ import {
   editElementGeometry,
   elementMoveTarget,
   frameShows,
+  hasFrameWindow,
   noteFrameDocument,
   requestFrame,
   styleGesture,
@@ -112,7 +113,9 @@ export function useElementMove(frame: Frame, layoutZoom: number) {
        frame: the copy rides the pointer, the original stays (with its id, so
        its comments and links stay put) */
     const duplicating = e.altKey && e.shiftKey && s.selectedElement?.frameId === frame.id
-    if ((e.altKey && !duplicating) || !e.isPrimary || !frame.html) return false
+    /* a frame without a live document (off screen, see lib/frameCulling.ts) has no
+       element to pick up: the press is the frame's own */
+    if ((e.altKey && !duplicating) || !e.isPrimary || !frame.html || !hasFrameWindow(frame.id)) return false
     if (!e.shiftKey && s.selectedIds.includes(frame.id) && s.selectedIds.length > 1) return false
     const standalone = isCanvasElement(frame.html)
     /* a standalone element is moved like a frame — live under the pointer,
