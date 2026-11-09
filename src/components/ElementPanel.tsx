@@ -325,7 +325,17 @@ export function ElementPanel({
 
 const LOADING_SECTIONS: { title: PlainMessageKey; rows: PlainMessageKey[] }[] = [
   { title: 'inspector.sectionPosition', rows: ['inspector.rowType', 'inspector.rowOrder'] },
-  { title: 'inspector.sectionLayout', rows: ['inspector.rowMinWidth', 'inspector.rowDisplay', 'inspector.rowGap'] },
+  {
+    title: 'inspector.sectionLayout',
+    rows: [
+      'inspector.rowMinWidth',
+      'inspector.rowMaxWidth',
+      'inspector.rowMinHeight',
+      'inspector.rowMaxHeight',
+      'inspector.rowDisplay',
+      'inspector.rowGap',
+    ],
+  },
   { title: 'inspector.sectionAppearance', rows: ['inspector.rowOpacity', 'inspector.rowRadius'] },
   { title: 'inspector.sectionFill', rows: ['inspector.rowColor'] },
   { title: 'inspector.sectionStroke', rows: ['inspector.rowColor', 'inspector.rowWidth'] },
@@ -958,6 +968,30 @@ function DesignTab({
             value={info.inline['min-width'] ?? (info.minWidth === '0px' ? '' : info.minWidth)}
             placeholder="auto"
             onCommit={(v) => apply({ 'min-width': lengthValue(v) })}
+          />
+        </PropertyRow>
+        <PropertyRow label={t('inspector.rowMaxWidth')}>
+          <LengthField
+            label={t('inspector.maximumWidth')}
+            value={info.inline['max-width'] ?? (info.maxWidth === 'none' ? '' : info.maxWidth)}
+            placeholder="none"
+            onCommit={(v) => apply({ 'max-width': lengthValue(v) })}
+          />
+        </PropertyRow>
+        <PropertyRow label={t('inspector.rowMinHeight')}>
+          <LengthField
+            label={t('inspector.minimumHeight')}
+            value={info.inline['min-height'] ?? (info.minHeight === '0px' ? '' : info.minHeight)}
+            placeholder="auto"
+            onCommit={(v) => apply({ 'min-height': lengthValue(v) })}
+          />
+        </PropertyRow>
+        <PropertyRow label={t('inspector.rowMaxHeight')}>
+          <LengthField
+            label={t('inspector.maximumHeight')}
+            value={info.inline['max-height'] ?? (info.maxHeight === 'none' ? '' : info.maxHeight)}
+            placeholder="none"
+            onCommit={(v) => apply({ 'max-height': lengthValue(v) })}
           />
         </PropertyRow>
         <PropertyRow label={t('inspector.rowDisplay')}>
