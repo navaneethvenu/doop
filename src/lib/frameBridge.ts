@@ -78,6 +78,9 @@ export interface ElementInfo {
   aspectRatio: string
   naturalAspectRatio: number | null
   minWidth: string
+  maxWidth: string
+  minHeight: string
+  maxHeight: string
   rowGap: number | null
   columnGap: number | null
   padding: [number | null, number | null, number | null, number | null]
