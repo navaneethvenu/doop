@@ -18,6 +18,13 @@ import {
   type AccountStatus,
 } from './modelAccounts.ts'
 import { CLAUDE_EFFORT_OPTIONS, CLAUDE_MODELS } from '../shared/localAgent.ts'
+import { CODEX_EFFORT_OPTIONS, DEFAULT_CODEX_EFFORT } from '../shared/codexLocal.ts'
+import { probeCodex } from './codexLocal.ts'
+import { env } from './env.ts'
+
+function codexModelFor(): string {
+  return env.DOOP_CODEX_MODEL
+}
 import { ANTHROPIC_MODELS, GEMINI_MODELS, OPENROUTER_MODELS, reasoningEffortOptions } from '../shared/modelMenu.ts'
 import type { ModelOption } from '../shared/modelMenu.ts'
 import { RUNNER_NAMES, type AgentRunner, type AgentRunners, type RunnerProvider } from '../shared/agentRunner.ts'
@@ -35,6 +42,24 @@ export async function listRunners(userId: string): Promise<AgentRunners> {
   const connections = await readConnections(userId)
   const runners: AgentRunner[] = []
   const { plan } = connections
+  const codex = await probeCodex()
+  if (codex.available) {
+    runners.push({
+      provider: 'codex-local',
+      name: RUNNER_NAMES['codex-local'],
+      online: true,
+      model: codexModelFor(),
+      effort: DEFAULT_CODEX_EFFORT,
+      models: [
+        {
+          id: codexModelFor(),
+          name: codexModelFor(),
+          blurb: 'The model your Codex CLI is signed in with — the chat is the CLI session itself',
+        },
+      ],
+      efforts: CODEX_EFFORT_OPTIONS,
+    })
+  }
   if (plan.enabled) {
     runners.push({
       provider: 'claude-local',
