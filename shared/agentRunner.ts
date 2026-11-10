@@ -10,14 +10,19 @@
  */
 import { ACCOUNT_KIND_LABELS, type AccountKindName } from './modelMenu.ts'
 
-export type RunnerProvider = 'claude-local' | AccountKindName
+export type RunnerProvider = 'claude-local' | 'codex-local' | AccountKindName
 
 export const RUNNER_PROVIDERS: readonly RunnerProvider[] = [
   'claude-local',
+  'codex-local',
   ...(Object.keys(ACCOUNT_KIND_LABELS) as AccountKindName[]),
 ]
 
-export const RUNNER_NAMES: Record<RunnerProvider, string> = { 'claude-local': 'Claude Plan', ...ACCOUNT_KIND_LABELS }
+export const RUNNER_NAMES: Record<RunnerProvider, string> = {
+  'claude-local': 'Claude Plan',
+  'codex-local': 'Codex CLI',
+  ...ACCOUNT_KIND_LABELS,
+}
 
 /** What a card asks to run on. The model and effort are checked against the
  *  provider when the run is picked; an id the provider does not know runs on

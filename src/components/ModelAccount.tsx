@@ -361,7 +361,7 @@ export function ModelAccountPanel({ onChange }: { onChange?: () => void }) {
     )
   const makeDefault = (provider: RunnerProvider) =>
     act(
-      provider === 'claude-local' ? null : provider,
+      provider === 'claude-local' || provider === 'codex-local' ? null : provider,
       () => api.setDefaultRunner(provider),
       () => posthog.capture('agent_default_changed', { provider }),
     )

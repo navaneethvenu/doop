@@ -2,6 +2,8 @@ import { env } from './env.ts'
 import { readConnections, usableAccount, type Connections } from './agentDefaults.ts'
 import { geminiCloudRuns, geminiCloudWorkerFor } from './geminiCloudRuns.ts'
 import { localAgentRuns, type LocalHarnessRequest } from './localAgentRuns.ts'
+import { codexLocalRuns, probeCodex } from './codexLocal.ts'
+import { DEFAULT_CODEX_EFFORT, isCodexEffort, isCodexModel } from '../shared/codexLocal.ts'
 import { isClaudeEffort, isClaudeModel, type LocalAgentResult } from '../shared/localAgent.ts'
 import type { RunnerPick } from '../shared/agentRunner.ts'
 import Anthropic from '@anthropic-ai/sdk'
@@ -30,7 +32,7 @@ import { geminiConfig, openrouterConfig, runChatCompletionsTurn } from './chatCo
  */
 
 export type ServerProvider = 'anthropic' | 'azure'
-export type Provider = ServerProvider | AccountKind | 'claude-local' | 'gemini-cloud'
+export type Provider = ServerProvider | AccountKind | 'claude-local' | 'codex-local' | 'gemini-cloud'
 
 export interface AgentTurnRequest {
   /** ordered system blocks; `cache` marks an Anthropic cache breakpoint */
@@ -318,11 +320,37 @@ export async function pickModel(payerId?: string, pick?: RunnerPick): Promise<Ag
     console.error('[doop-agent] could not read the connected model accounts', err)
     return { plan: { enabled: false, model: 'default' }, accounts: [], default: undefined }
   })
+  const codex = pick?.provider === 'codex-local' || connections.default === 'codex-local' ? await probeCodex() : null
   const picked =
-    pick && (pick.provider === 'claude-local' ? connections.plan.enabled : usableAccount(connections, pick.provider))
+    pick &&
+    (pick.provider === 'claude-local'
+      ? connections.plan.enabled
+      : pick.provider === 'codex-local'
+        ? (codex?.available ?? false)
+        : usableAccount(connections, pick.provider))
   const provider = picked ? pick.provider : connections.default
   /* the pick's model and effort apply only to the connection it named */
   const own = picked ? pick : undefined
+  if (provider === 'codex-local') {
+    /* like the Claude Plan, the CLI never hands its work to another
+       connection while it is away */
+    if (!codex?.available) return null
+    const run = {
+      model: own && isCodexModel(own.model) ? own.model : env.DOOP_CODEX_MODEL,
+      effort: own && isCodexEffort(own.effort) ? own.effort : DEFAULT_CODEX_EFFORT,
+    }
+    return {
+      provider: 'codex-local',
+      label: `Codex CLI (${run.model}, ${run.effort} effort)`,
+      userId: payerId,
+      vision: true,
+      runHarness: (req) => codexLocalRuns.start(payerId, run, req),
+      run: () =>
+        Promise.reject(
+          new Error('Repository imports require a server provider. Select your connected account in Settings.'),
+        ),
+    }
+  }
   if (provider === 'claude-local') {
     /* the Plan never hands its work to another connection while the desktop is away */
     if (!localAgentRuns.online(payerId)) return null

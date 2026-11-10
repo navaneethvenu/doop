@@ -79,6 +79,7 @@ import { seed } from './seed.ts'
 import * as allowance from './allowance.ts'
 import * as modelAccounts from './modelAccounts.ts'
 import { getLocalAgentPreference } from './localAgentPreferences.ts'
+import { probeCodex } from './codexLocal.ts'
 import { serverTierInfo } from './agentModel.ts'
 import { imageModelAvailability, serverImageGenEnabled } from './imageGen.ts'
 import { setImagePref } from './imagePrefs.ts'
@@ -973,7 +974,9 @@ app.put('/api/agent-runners/default', async (req, res) => {
     const usable =
       provider === 'claude-local'
         ? (await getLocalAgentPreference(userId)).enabled
-        : (await modelAccounts.getAccount(userId, provider))?.enabled
+        : provider === 'codex-local'
+          ? (await probeCodex()).available
+          : (await modelAccounts.getAccount(userId, provider))?.enabled
     if (!usable) return res.status(400).json({ error: 'connect and switch that on first' })
     await setStoredDefault(userId, provider)
     res.json(await accountsView(userId))

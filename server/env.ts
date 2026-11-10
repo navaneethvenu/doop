@@ -2,6 +2,7 @@ import { bool, cleanEnv, EnvMissingError, makeExactValidator, port, str } from '
 import type { ReporterOptions } from 'envalid'
 import { createHash } from 'node:crypto'
 import { DEFAULT_GEMINI_MODEL, DEFAULT_OPENROUTER_MODEL } from '../shared/modelMenu.ts'
+import { DEFAULT_CODEX_MODEL } from '../shared/codexLocal.ts'
 import { FALLBACK_LOCALE, LOCALES } from '../shared/locales.ts'
 
 /**
@@ -160,6 +161,14 @@ const schema = {
   DOOP_AGENT_OPENAI_EFFORT: str({ default: 'medium' }),
   DOOP_AGENT_OPENROUTER_MODEL: str({ default: DEFAULT_OPENROUTER_MODEL }),
   DOOP_AGENT_GEMINI_MODEL: str({ default: DEFAULT_GEMINI_MODEL }),
+  /* the Codex CLI ("Luna") runner: auto-detected on the server machine;
+     nothing to connect. DOOP_CODEX_PATH pins a binary that is not on PATH,
+     DOOP_CODEX_DISABLED hides the provider even when a CLI is installed */
+  DOOP_CODEX_PATH: str({ default: undefined }),
+  DOOP_CODEX_MODEL: str({ default: DEFAULT_CODEX_MODEL }),
+  DOOP_CODEX_DISABLED: bool({ default: false }),
+  /* the CLI's own home; auth.json there proves the sign-in exists */
+  CODEX_HOME: str({ default: undefined }),
   /* JSON; parsed and shape-checked where it is used so a parse error never
      echoes the worker secrets it contains */
   DOOP_GEMINI_CLOUD_WORKERS: str({ default: undefined }),

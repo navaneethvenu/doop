@@ -76,7 +76,10 @@ export function ModelPicker({ disabled = false }: { disabled?: boolean }) {
   const resolved = resolveRunnerPick(runners, stored)
   /* the picked account's live catalog, asked for once the menu opens; the
      other connections show their curated menus */
-  const liveKind = resolved && resolved.runner.provider !== 'claude-local' ? resolved.runner.provider : undefined
+  const liveKind =
+    resolved && resolved.runner.provider !== 'claude-local' && resolved.runner.provider !== 'codex-local'
+      ? resolved.runner.provider
+      : undefined
   const catalog = useAgentModels(liveKind, open)
   const modelsOf = (runner: AgentRunner): RunnerOption[] =>
     runner.provider === liveKind && catalog?.live ? catalog.models : runner.models

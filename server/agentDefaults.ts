@@ -11,6 +11,7 @@ import { db } from './db/index.ts'
 import { agentDefaults } from './db/schema.ts'
 import { getAccounts, type ModelAccount } from './modelAccounts.ts'
 import { getLocalAgentPreference } from './localAgentPreferences.ts'
+import { probeCodex } from './codexLocal.ts'
 import { isRunnerProvider, type RunnerProvider } from '../shared/agentRunner.ts'
 import type { LocalAgentPreference } from '../shared/localAgent.ts'
 
@@ -32,10 +33,16 @@ export function resolveDefault(
   stored: RunnerProvider | undefined,
   planOn: boolean,
   accounts: readonly ModelAccount[],
+  codexOn = false,
 ): RunnerProvider | undefined {
   const on = accounts.filter((account) => account.enabled)
   if (stored === 'claude-local' && planOn) return stored
+  if (stored === 'codex-local' && codexOn) return stored
   if (stored && on.some((account) => account.kind === stored)) return stored
+  /* the Codex CLI ("Luna") wins by presence: it runs on the user's own
+     subscription with nothing to connect, so the moment it exists, it is the
+     default unpicked work runs on */
+  if (codexOn) return 'codex-local'
   if (planOn) return 'claude-local'
   return on[0]?.kind
 }
@@ -48,7 +55,7 @@ export interface Connections {
 }
 
 export async function readConnections(userId: string): Promise<Connections> {
-  const [plan, accounts, stored] = await Promise.all([
+  const [plan, accounts, stored, codex] = await Promise.all([
     getLocalAgentPreference(userId),
     getAccounts(userId),
     /* an unreadable mark is no mark: the fallback order still runs the work */
@@ -56,8 +63,9 @@ export async function readConnections(userId: string): Promise<Connections> {
       console.error('[doop-agent] could not read the default connection', err)
       return undefined
     }),
+    probeCodex(),
   ])
-  return { plan, accounts, default: resolveDefault(stored, plan.enabled, accounts) }
+  return { plan, accounts, default: resolveDefault(stored, plan.enabled, accounts, codex.available) }
 }
 
 /** The account a provider names, when it is connected and on. */
