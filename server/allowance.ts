@@ -35,7 +35,7 @@ export interface Allowance {
   /** the user connected a model account the Doop Agent can run on */
   byoModel: boolean
   /** which kind, for the UI copy */
-  byoKind?: AccountKind | 'claude-local' | 'gemini-cloud'
+  byoKind?: AccountKind | 'claude-local' | 'codex-local' | 'gemini-cloud'
   /** the default account's email, so the UI can name what is connected */
   byoEmail?: string
   /** the agent is running on this user's own account right now — connecting
